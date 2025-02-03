@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fiszki.Scripts
 {
-    public interface IDataManagement
+    internal class Config_Options
     {
-        virtual void LoadData() { }
-        virtual void PushData(object data, ActionTypes type) { }
     }
 }

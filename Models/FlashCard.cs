@@ -1,35 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Fiszki.Models
 {
     public class FlashCard
     {
-        public int Id { get; set; }
-        public string First_L {  get; set; }
-        public string Second_L { get; set;}
-        public string Typed { get; set; }
-        
+        public List<string> FirstWord { get; set; } // Wersja nieprzetłumaczona
+        public List<string> SecondWord { get; set; } // Wersja przetłumaczona
 
-        public string FirstWord { get; { 
-            switch (Typed)
-                {
-                    case Translation.Single_T:
+        public string Language { get; set; }
 
-                        break;
-                    case Translation.Multiply_T:
-                        string[] t = firstWord.Split('|');
-
-                        break;
-                    case Translation.Sentence_T:
-
-                        break;
-                }
-
-            }; }
-        public string SecondWord { get; set; }
+        public FlashCard(List<string> firstWord, List<string> secondWord,string language)
+        {
+            FirstWord = firstWord;
+            SecondWord = secondWord;
+            Language = language;
+        }
     }
+
 }
+
+
+
+

@@ -13,7 +13,7 @@ namespace Fiszki.Scripts
 
         protected Paths()
         {
-            PathFlashCards = Path.Combine(Directory.GetCurrentDirectory(), "data", "fiszki", "fiszki.json");
+            PathFlashCards = Path.Combine(Directory.GetCurrentDirectory(), "data", "fiszki.txt");
             
         }
     }

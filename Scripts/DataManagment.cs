@@ -1,51 +1,82 @@
-﻿using System;
+﻿using Fiszki.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Fiszki.Scripts
 {
     abstract class DataManagment : Paths, IDataManagement
     {
-        public List<User>? flash_cards;
-      
-
+        public List<List<List<FlashCard>>> flash_cards = new List<List<List<FlashCard>>>();
         public virtual void LoadData()
         {
-            string flashcards_J = File.ReadAllText(PathFlashCards);
-           
-            flash_cards = JsonSerializer.Deserialize<List<User>>(flashcards_J);
-           
-        }
+            flash_cards.Clear();
 
-        public virtual void PushData(object data, ActionTypes type)
-        {
-            switch (type)
+            if (!File.Exists(PathFlashCards))
+                return;
+
+            using (StreamReader reader = new StreamReader(PathFlashCards))
             {
-                case ActionTypes.User:
-                    users = (List<User>)data;
-                    string jsonU = JsonSerializer.Serialize(users);
-                    File.WriteAllText(PathUsers, jsonU);
-                    break;
-                case ActionTypes.Room:
-                    rooms = (List<Room>)data;
-                    string jsonR = JsonSerializer.Serialize(rooms);
-                    File.WriteAllText(PathRooms, jsonR);
-                    break;
-                case ActionTypes.Movie:
-                    movies = (List<Movie>)data;
-                    string jsonM = JsonSerializer.Serialize(movies);
-                    File.WriteAllText(PathMovies, jsonM);
-                    break;
-                case ActionTypes.Cinema:
-                    cinemas = (List<Cinema>)data;
-                    string jsonC = JsonSerializer.Serialize(cinemas);
-                    File.WriteAllText(PathCinemas, jsonC);
-                    break;
-                default:
-                    throw new ArgumentException("Invalid data type.");
+                string line;
+                string language = ""; // Zmienna na przechowanie informacji o językach
+                bool isFirstLine = true; // Flaga, czy to pierwsza linijka
+
+                // Pattern dla podziału pytania i odpowiedzi
+                string pattern = @"^(?'questions'[^\-]*)\s*-\s*(?'anwsers'.*)$";
+
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+
+                    if (line.Length == 0)
+                        continue; // pomijamy puste linie
+
+                    if (isFirstLine)
+                    {
+                        if (line.StartsWith("LG:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            language = line.Substring(3).Trim();
+
+                            isFirstLine = false;
+                            continue; 
+                        }
+                        isFirstLine = false;
+                    }
+
+                    // Przetwarzamy kolejne linie jako dane flashcardów
+                    Match match = Regex.Match(line, pattern);
+                    if (match.Success)
+                    {
+                        string questionGroups = match.Groups["questions"].Value.Trim();
+                        string anwsersGroups = match.Groups["anwsers"].Value.Trim();
+
+                        List<string> questions = questionGroups.Split('|').Select(x => x.Trim()).ToList();
+                        List<string> anwsers = anwsersGroups.Split('|').Select(x => x.Trim()).ToList();
+                        
+                        // Dodajemy kartę do flash_cards; zakładamy, że FlashCard ma konstruktor przyjmujący
+                        // listy pytań, odpowiedzi oraz informację o językach.
+                        flash_cards.Add(new List<List<FlashCard>>
+                {
+                    new List<FlashCard>
+                    {
+                        new FlashCard(questions, anwsers, language)
+                    }
+                });
+                    }
+                }
             }
         }
+
+
+   
+      
+
+
+
+
     }
+}
