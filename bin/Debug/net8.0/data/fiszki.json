@@ -1,0 +1,139 @@
+{
+  "flashcards": [
+      {
+          "difficulty": "E",
+          "PL": ["jabłko"],
+          "ENG": ["apple"],
+          "hint": {
+              "PL": "kulisty jadalny owoc",
+              "ENG": "spherical edible fruit"
+          }
+      },
+      {
+          "difficulty": "M",
+          "PL": ["samochód", "auto"],
+          "ENG": ["car", "auto", "automobile"],
+          "hint": {
+              "PL": "powszechny czterokołowy pojazd",
+              "ENG": "common four-wheeled vehicle"
+          }
+      },
+      {
+          "difficulty": "H",
+          "PL": ["Czyny mówią głośniej niż słowa"],
+          "ENG": ["Actions speak louder than words"],
+          "hint": {
+              "PL": "",
+              "ENG": ""
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["dom"],
+          "ENG": ["house"],
+          "hint": {
+              "PL": "budynek",
+              "ENG": "building"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["pies"],
+          "ENG": ["dog"],
+          "hint": {
+              "PL": "zwierzę",
+              "ENG": "animal"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["kot"],
+          "ENG": ["cat"],
+          "hint": {
+              "PL": "zwierzę",
+              "ENG": "animal"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["książka"],
+          "ENG": ["book"],
+          "hint": {
+              "PL": "przedmiot",
+              "ENG": "object"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["stół"],
+          "ENG": ["table"],
+          "hint": {
+              "PL": "mebel",
+              "ENG": "furniture"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["krzesło"],
+          "ENG": ["chair"],
+          "hint": {
+              "PL": "mebel",
+              "ENG": "furniture"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["okno"],
+          "ENG": ["window"],
+          "hint": {
+              "PL": "część budynku",
+              "ENG": "part of a building"
+          }
+      },
+      {
+          "difficulty": "E",
+          "PL": ["drzwi"],
+          "ENG": ["door"],
+          "hint": {
+              "PL": "część budynku",
+              "ENG": "part of a building"
+          }
+      },
+      {
+          "difficulty": "M",
+          "PL": ["rower"],
+          "ENG": ["bicycle", "bike"],
+          "hint": {
+              "PL": "dwukołowy pojazd napędzany siłą nóg",
+              "ENG": "two-wheeled vehicle powered by legs"
+          }
+      },
+      {
+          "difficulty": "M",
+          "PL": ["komputer"],
+          "ENG": ["computer"],
+          "hint": {
+              "PL": "urządzenie elektroniczne do obliczeń",
+              "ENG": "electronic device for computations"
+          }
+      },
+      {
+          "difficulty": "H",
+          "PL": ["Kto rano wstaje, temu Pan Bóg daje"],
+          "ENG": ["The early bird catches the worm"],
+          "hint": {
+              "PL": "Przysłowie o korzyściach z wczesnego wstawania",
+              "ENG": "A proverb about the benefits of waking up early"
+          }
+      },
+      {
+          "difficulty": "H",
+          "PL": ["Nie oceniaj książki po okładce"],
+          "ENG": ["Don't judge a book by its cover"],
+          "hint": {
+              "PL": "Przysłowie o powierzchownych osądach",
+              "ENG": "A proverb about superficial judgments"
+          }
+      }
+  ]
+}
