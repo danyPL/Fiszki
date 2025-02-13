@@ -1,82 +1,57 @@
 ﻿using Fiszki.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Fiszki.Scripts
 {
-    abstract class DataManagment : Paths, IDataManagement
+    public abstract class DataManagment : Paths, IDataManagement
     {
         public List<List<List<FlashCard>>> flash_cards = new List<List<List<FlashCard>>>();
+        public Config config;
+        public void LoadConfig()
+        {
+            if (!File.Exists(PathConfig))
+                return;
+
+            string json = File.ReadAllText(PathConfig);
+            config = JsonSerializer.Deserialize<Config>(json) ?? new Config("Easy", true, new List<char> { 'E', 'M', 'H' });
+            
+        }
+
+        public virtual void SaveConfig(Config conifgU)
+        {
+            string json = JsonSerializer.Serialize(conifgU, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(PathConfig, json);
+        }
         public virtual void LoadData()
         {
             flash_cards.Clear();
-
+            LoadConfig();
             if (!File.Exists(PathFlashCards))
                 return;
 
-            using (StreamReader reader = new StreamReader(PathFlashCards))
+            string json = File.ReadAllText(PathFlashCards);
+            FlashcardsRoot root = JsonSerializer.Deserialize<FlashcardsRoot>(json);
+            if (root != null && root.flashcards != null)
             {
-                string line;
-                string language = ""; // Zmienna na przechowanie informacji o językach
-                bool isFirstLine = true; // Flaga, czy to pierwsza linijka
-
-                // Pattern dla podziału pytania i odpowiedzi
-                string pattern = @"^(?'questions'[^\-]*)\s*-\s*(?'anwsers'.*)$";
-
-                while ((line = reader.ReadLine()) != null)
+                foreach (var fc in root.flashcards)
                 {
-                    line = line.Trim();
 
-                    if (line.Length == 0)
-                        continue; // pomijamy puste linie
+                    FlashcardHint hintPL = new FlashcardHint(fc.hint.PL, fc.hint.ENG);
+                    FlashcardHint hintENG = new FlashcardHint(fc.hint.PL, fc.hint.ENG);
 
-                    if (isFirstLine)
-                    {
-                        if (line.StartsWith("LG:", StringComparison.OrdinalIgnoreCase))
-                        {
-                            language = line.Substring(3).Trim();
+                    FlashCard cardPL = new FlashCard(fc.PL, fc.ENG, "PL", fc.difficulty,hintPL);
 
-                            isFirstLine = false;
-                            continue; 
-                        }
-                        isFirstLine = false;
-                    }
+                    FlashCard cardENG = new FlashCard(fc.ENG, fc.PL, "ENG", fc.difficulty,hintENG);
 
-                    // Przetwarzamy kolejne linie jako dane flashcardów
-                    Match match = Regex.Match(line, pattern);
-                    if (match.Success)
-                    {
-                        string questionGroups = match.Groups["questions"].Value.Trim();
-                        string anwsersGroups = match.Groups["anwsers"].Value.Trim();
-
-                        List<string> questions = questionGroups.Split('|').Select(x => x.Trim()).ToList();
-                        List<string> anwsers = anwsersGroups.Split('|').Select(x => x.Trim()).ToList();
-                        
-                        // Dodajemy kartę do flash_cards; zakładamy, że FlashCard ma konstruktor przyjmujący
-                        // listy pytań, odpowiedzi oraz informację o językach.
-                        flash_cards.Add(new List<List<FlashCard>>
-                {
-                    new List<FlashCard>
-                    {
-                        new FlashCard(questions, anwsers, language)
-                    }
-                });
-                    }
+                    flash_cards.Add(new List<List<FlashCard>> { new List<FlashCard> { cardPL } });
+                    flash_cards.Add(new List<List<FlashCard>> { new List<FlashCard> { cardENG } });
                 }
             }
         }
-
-
-   
-      
-
-
-
-
     }
 }

@@ -9,11 +9,13 @@ namespace Fiszki.Scripts
     public abstract class Paths
     {
         protected string PathFlashCards { get; private set; }
+        protected string PathConfig { get; private set; }
 
 
         protected Paths()
         {
-            PathFlashCards = Path.Combine(Directory.GetCurrentDirectory(), "data", "fiszki.txt");
+            PathFlashCards = Path.Combine(Directory.GetCurrentDirectory(), "data", "fiszki.json");
+            PathConfig = Path.Combine(Directory.GetCurrentDirectory(), "data", "config.json");
             
         }
     }

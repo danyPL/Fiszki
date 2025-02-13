@@ -5,116 +5,143 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Fiszki.Gui
 {
     internal class TrainingView
     {
-        FlashCard_Action flashcardActions = new FlashCard_Action();
-        List<string> Quotes = new List<string>() { "Bylo blisko","Nuh uh","Nastepnym razem sie uda"};
-        public void Exam(string language)
-        {
-            // Utwórz instancję, która ładuje dane fiszek
-            FlashCard_Action flashcardActions = new FlashCard_Action();
+        private FlashCard_Action flashcardActions = new FlashCard_Action();
 
-            // Zbierz wszystkie fiszki, które mają pasujący język
-            List<FlashCard> examCards = new List<FlashCard>();
+        private List<string> Quotes = new List<string>() { "Było blisko", "Nuh uh", "Następnym razem się uda" };
+
+        public void Exam(string language, char mode, bool showDescription)
+        {
+         
+            List<FlashCard> allMatchingCards = new List<FlashCard>();
             foreach (var cardList in flashcardActions.flash_cards)
             {
                 foreach (var innerList in cardList)
                 {
                     foreach (var flashcard in innerList)
                     {
-                        if (flashcard.Language.Equals(language, StringComparison.OrdinalIgnoreCase))
+                        if (flashcard.Language.Equals(language, StringComparison.OrdinalIgnoreCase) &&
+                            flashcard.Difficulty.Equals(mode.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
-                            examCards.Add(flashcard);
+                            allMatchingCards.Add(flashcard);
                         }
                     }
                 }
             }
+            Console.WriteLine($"Wybierz ile fiszek chcesz się nauczyć (od 1 do {allMatchingCards.Count}):");
+            int count;
+            while (!int.TryParse(Console.ReadLine(), out count) || count <= 0)
+            {
+                Console.WriteLine("Błąd: Podaj liczbę całkowitą większą od 0.");
+            }
 
-            // Jeśli brak fiszek dla danego języka, informujemy użytkownika i kończymy
+            List<FlashCard> examCards = allMatchingCards.Take(count).ToList();
+
             if (examCards.Count == 0)
             {
-                Console.WriteLine($"Brak fiszek dla języka: {language}");
+                Console.WriteLine($"Brak fiszek dla języka: {language} i poziomu trudności: {mode}");
                 Console.ReadKey(true);
                 return;
             }
 
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"Wybrano język: {language}");
+            Console.WriteLine($"Wybrano język: {language} | Poziom trudności: {mode}");
             Console.ResetColor();
             Console.WriteLine("\nRozpoczynamy egzamin.\n");
 
-            int score = 0;
             Random rnd = new Random();
-
-            // tasujemy fiszki :>
             examCards = examCards.OrderBy(x => rnd.Next()).ToList();
 
-            // Dynamicznie aktualizuje ilość zdobytych punktów poprzez zwracanie odpowiedniego wyniku z danego pytania
-            score = Question(examCards, score);
+            int score = Question(examCards, mode,showDescription);
 
-           
-            Console.WriteLine($"Egzamin zakończony. Twój wynik: {score} na {examCards.Count} {score * examCards.Count}%");
-            Console.WriteLine("Naciśnij dowolny klawisz, aby zakończyć...");
+            Console.WriteLine($"Egzamin zakończony. Twój wynik: {score} na {examCards.Count} ({(score * 100) / examCards.Count}%)");
+            Console.WriteLine("Naciśnij enter , aby wrócić do menu...");
             Console.ReadKey(true);
         }
 
-        public int Question(List<FlashCard> examCards, int score)
+           public int Question(List<FlashCard> examCards, char mode,bool showDescription)
         {
+            int score = 0;
             Random rnd = new();
+
             foreach (var flashcard in examCards)
             {
                 Console.Clear();
-                string questionText = string.Join(", ", flashcard.FirstWord);
+                Console.WriteLine($"Pytanie: {string.Join(", ", flashcard.FirstWord)}");
 
-                string correctAnswers = string.Join(", ", flashcard.SecondWord);
-
-                Console.WriteLine($"Pytanie: {questionText}");
-                Console.Write("Twoja odpowiedź: ");
-                string userAnswer = Console.ReadLine().Trim();
-
-                // Sprawdzamy, czy odpowiedź użytkownika znajduje się w liście poprawnych odpowiedzi (bez uwzględniania wielkości liter)
-                bool isCorrect = flashcard.SecondWord.Any(answer => string.Equals(answer, userAnswer, StringComparison.OrdinalIgnoreCase));
-                if (isCorrect)
+                if (mode == 'E')
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Poprawnie!");
-                    score++;
+                    string hint = (!showDescription
+                        ? GenerateHint(flashcard.SecondWord?.FirstOrDefault()?.ToString() ?? "")
+                        : (flashcard.Hint != null
+                            ? (flashcard.Language == "PL" ? flashcard.Hint.PL : flashcard.Hint.ENG)
+                            : ""));
+
+                    if (!string.IsNullOrWhiteSpace(hint))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"Podpowiedź: {hint}");
+                        Console.ResetColor();
+                    }
+                }
+
+                Console.Write("Twoja odpowiedź: ");
+                string userInput = Console.ReadLine()?.Trim().ToLower() ?? "";
+                var correctAnswers = flashcard.SecondWord.Select(ans => ans.Trim().ToLower()).Distinct().ToList();
+
+                bool isCorrect;
+
+                if (mode == 'M') 
+                {
+                    var userAnswers = userInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                               .Select(s => s.Trim().ToLower()) 
+                                               .ToList();
+
+                   
+                    bool allCorrectGiven = !userAnswers.Except(correctAnswers).Any(); 
+                    bool allRequiredGiven = !correctAnswers.Except(userAnswers).Any(); 
+
+                    isCorrect = allCorrectGiven && allRequiredGiven;
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Niepoprawnie! Prawidłowa odpowiedź to: {correctAnswers}");
+                    isCorrect = correctAnswers.Contains(userInput.Trim().ToLower());
                 }
-                Console.ResetColor();
-                Console.WriteLine("Wciśnij enter, aby przejść do następnego pytania!");
-                ConsoleSpinner spinner = new ConsoleSpinner();
-                spinner.Delay = 300;
-                bool repeat = true;
-                while (repeat)
-                {
-                    spinner.Turn(displayMsg: $"{Quotes[rnd.Next(0,Quotes.Count)]}", sequenceCode: 6);
 
-                }
-                Console.ReadKey(true);
-               
+                Console.ForegroundColor = isCorrect ? ConsoleColor.Green : ConsoleColor.Red;
+                Console.WriteLine(isCorrect ? "Poprawnie!" : $"Niepoprawnie! Prawidłowa odpowiedź to: {string.Join(", ", flashcard.SecondWord)}");
+                Console.ResetColor();
+                
+                if (isCorrect) score++;
+                Console.WriteLine("Wciśnij Enter, aby przejść do następnego pytania...");
+                Console.ReadLine();
             }
+
             return score;
         }
-
-        public TrainingView()
+   
+        private string GenerateHint(string word)
         {
-            // Tworzymy instancję, która ładuje dane fiszek
+            if (string.IsNullOrEmpty(word))
+                return string.Empty;
 
+            if (word.Length == 1)
+                return word;  
+
+            return word[0] + " " + new string('_', word.Length - 1);
+        }
+
+        public TrainingView(char diffMode,bool showDescription)
+        {
             Console.Clear();
             Console.OutputEncoding = Encoding.UTF8;
             Console.CursorVisible = false;
 
-            // Zbieramy unikalne języki z fiszek
             HashSet<string> languagesSet = new HashSet<string>();
             foreach (var cardList in flashcardActions.flash_cards)
             {
@@ -129,6 +156,7 @@ namespace Fiszki.Gui
                     }
                 }
             }
+
             List<string> languages = languagesSet.ToList();
             if (languages.Count == 0)
             {
@@ -137,10 +165,10 @@ namespace Fiszki.Gui
                 return;
             }
 
-            // Interfejs wyboru języka
             int option = 0;
-            ConsoleKeyInfo key;
             bool isSelected = false;
+            ConsoleKeyInfo key;
+
             while (!isSelected)
             {
                 Console.Clear();
@@ -154,6 +182,7 @@ namespace Fiszki.Gui
                     string prefix = (i == option) ? "> " : "  ";
                     Console.WriteLine($"{prefix}{languages[i]}");
                 }
+
                 key = Console.ReadKey(true);
                 switch (key.Key)
                 {
@@ -169,10 +198,8 @@ namespace Fiszki.Gui
                 }
             }
 
-            // Wybrany język
             string selectedLanguage = languages[option];
-
-            Exam(selectedLanguage);
+            Exam(selectedLanguage, diffMode, showDescription);
 
             Console.WriteLine("\nNaciśnij dowolny klawisz, aby zakończyć...");
             Console.ReadKey(true);
